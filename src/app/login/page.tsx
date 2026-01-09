@@ -80,7 +80,7 @@ function LoginForm() {
           className="w-full px-4 py-3 border border-blue-200/20 rounded-lg bg-white/10 text-white placeholder:text-white/50 focus:outline-none focus:border-[#D4AF37] text-base"
           required
           readOnly={isLoading}
-          placeholder="example@email.com"
+          placeholder="example@gmail.com"
         />
       </div>
 
@@ -97,6 +97,7 @@ function LoginForm() {
             className="w-full px-4 py-3 pr-12 border border-blue-200/20 rounded-lg bg-white/10 text-white placeholder:text-white/50 focus:outline-none focus:border-[#D4AF37] text-base"
             required
             readOnly={isLoading}
+            placeholder="********"
           />
           <button
             type="button"

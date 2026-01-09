@@ -9,6 +9,12 @@ import PWA from "@/components/PWA";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import Notification from "@/components/Notification";
 
+export const metadata: Metadata = {
+  title: "Burmese Beacon",
+  icons: {
+    icon: "/favicon.ico", // ဒါက automatic app folder ထဲကဟာကို ယူပါလိမ့်မယ်
+  },
+};
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
