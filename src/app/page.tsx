@@ -1,65 +1,163 @@
+'use client'
+
+import { useState, useEffect } from 'react'
 import Image from "next/image";
+import { supabase } from '@/lib/supabase'
+import { useRouter } from 'next/navigation'
+import Logo from '@/components/Logo'
+import Footer from '@/components/Footer'
+import { usePWA } from '@/lib/usePWA'
+import { getDirectVideoLink } from '@/lib/helpers'
 
 export default function Home() {
+  const [ads, setAds] = useState<any[]>([])
+  const [currentAdIndex, setCurrentAdIndex] = useState(0)
+  const [content, setContent] = useState<any[]>([])
+  const [isClient, setIsClient] = useState(false)
+  const { isInstallable, isStandalone, installApp } = usePWA()
+  const router = useRouter()
+
+  useEffect(() => {
+    setIsClient(true)
+    fetchAds()
+    fetchContent()
+    router.refresh() // Force fresh data fetching
+  }, [])
+
+  useEffect(() => {
+    if (ads.length > 0) {
+      const adInterval = setInterval(() => {
+        setCurrentAdIndex((prev) => (prev + 1) % ads.length)
+      }, 3000)
+
+      return () => clearInterval(adInterval)
+    }
+  }, [ads.length])
+
+  const fetchAds = async () => {
+    const { data, error } = await supabase
+      .from('overview_ads')
+      .select('*')
+      .eq('is_displaying', true)
+      .order('created_at')
+
+    if (error) {
+      console.error('Error fetching ads:', error)
+    } else {
+      setAds(data || [])
+    }
+  }
+
+  const fetchContent = async () => {
+    const { data, error } = await supabase
+      .from('overview_content')
+      .select('title, description, video_url')
+      .order('created_at')
+
+    if (error) {
+      console.error('Error fetching content:', error)
+    } else {
+      setContent(data || [])
+    }
+  }
+
+  const handleGetStart = () => {
+    router.push('/login')
+  }
+
+  const handleContentClick = (item: any) => {
+    if (item.video_url) {
+      router.push('/videos')
+    } else {
+      router.push('/pdfs')
+    }
+  }
+
+  if (!isClient) {
+    return <div className="min-h-screen bg-[#001f3f]" />;
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
+    <div className="min-h-screen bg-[#001f3f] text-white">
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-[#001f3f] border-b border-[#D4AF37] p-4">
+        <div className="max-w-full w-full px-6 flex justify-between items-center">
+          <Logo />
+          {/* Install App Button - Always visible */}
+          <div className="flex items-center gap-3">
+            <span className="text-white text-sm hidden sm:inline">Install for quick learning</span>
+            <button
+              onClick={installApp}
+              className="bg-[#D4AF37] text-[#001f3f] px-3 py-2 rounded-lg font-bold hover:bg-[#B8962E] transition-colors text-sm whitespace-nowrap"
+            >
+              Install App
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      <section className="relative w-full aspect-[3/2] overflow-hidden">
         <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
+          src="/myanmarflag.png"
+          fill
+          className="object-cover"
+          alt="Myanmar Flag"
           priority
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+        <div className="absolute inset-0 bg-black/40" />
+        <div className="relative z-10 flex flex-col items-center justify-center h-full text-center p-6">
+          <h1 className="text-white text-3xl md:text-5xl font-bold mb-4 leading-tight">
+            Learn Myanmar Laws Easily
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-white/90 text-lg md:text-xl mb-8 max-w-2xl">
+            Master legal topics through engaging videos and audio content. Start your learning journey today.
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            onClick={handleGetStart}
+            className="bg-[#D4AF37] text-[#001f3f] px-8 py-4 rounded-lg text-xl font-semibold hover:bg-[#B8962E] transition-colors duration-300 shadow-lg"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            Get Started
+          </button>
         </div>
-      </main>
+      </section>
+
+      {/* Ads Section */}
+      <section className="bg-blue-400/20 py-16 backdrop-blur-md border-y border-blue-200/30 shadow-lg">
+        <div className="container mx-auto text-center">
+          <h2 className="text-white text-3xl md:text-4xl font-bold mb-8 drop-shadow-lg">
+            {ads.length > 0 ? ads[currentAdIndex]?.ad_text : 'Loading...'}
+          </h2>
+        </div>
+      </section>
+
+      {/* Content Sections */}
+      {content.map((item, index) => (
+        <section key={item.id || index} className="w-full py-8">
+          <div className="bg-[#001f3f]/80 backdrop-blur-sm border border-[#D4AF37]/30 rounded-lg overflow-hidden mx-4">
+            <h3 className="text-[#D4AF37] text-2xl font-bold text-center py-4">
+              {item.title}
+            </h3>
+            {item.video_url && (
+              <video
+                src={getDirectVideoLink(item.video_url)}
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="w-full object-cover pointer-events-none"
+                style={{ pointerEvents: 'none' }}
+              />
+            )}
+            <p className="text-white text-lg leading-relaxed text-justify py-4 px-4">
+              {item.description}
+            </p>
+          </div>
+        </section>
+      ))}
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }
