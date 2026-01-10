@@ -7,6 +7,7 @@ import { SidebarContent } from '@/lib/types'
 import ContentPlayer from './ContentPlayer'
 import SavedButton from './SavedButton'
 
+
 interface ContentSectionProps {
   contents: SidebarContent[]
   currentSection: string
@@ -89,44 +90,44 @@ const highlightText = (text: string, query: string) => {
     </div>
   );
 };
-
   const ContentSectionInner: React.FC<ContentSectionProps> = ({ contents, currentSection, onUnsave, searchQuery }) => {
   const [selectedContent, setSelectedContent] = useState<SidebarContent | null>(null)
   const router = useRouter()
   const pathname = usePathname()
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const forceDownload = async (url: string, filename: string, contentId: string) => {
+  try {
+    setDownloadingId(contentId); // နှိပ်လိုက်တဲ့ ID ကို loading ပြမယ်
 
-  const forceDownload = async (url: string, filename: string) => {
-    try {
-      // ၁။ ဒေါင်းလုပ်စတင်ကြောင်း Notification လှမ်းပို့သည်
-      window.dispatchEvent(new CustomEvent('notify', { 
-        detail: { message: 'ဖိုင်ကို ဒေါင်းလုပ်ဆွဲနေသည်...', type: 'loading' } 
-      }));
+    window.dispatchEvent(new CustomEvent('notify', { 
+      detail: { message: 'ဖိုင်ကို ဒေါင်းလုပ်ဆွဲနေသည်...', type: 'loading' } 
+    }));
 
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('Download failed');
-      
-      const blob = await res.blob();
-      const blobUrl = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = blobUrl;
-      a.download = filename || 'download';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(blobUrl);
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Download failed');
+    
+    const blob = await res.blob();
+    const blobUrl = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = filename || 'download';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(blobUrl);
 
-      // ၂။ ဒေါင်းလုပ်ပြီးဆုံးကြောင်း Notification လှမ်းပို့သည်
-      window.dispatchEvent(new CustomEvent('notify', { 
-        detail: { message: 'ဒေါင်းလုပ်ဆွဲပြီးပါပြီ။', type: 'success' } 
-      }));
+    window.dispatchEvent(new CustomEvent('notify', { 
+      detail: { message: 'ဒေါင်းလုပ်ဆွဲပြီးပါပြီ။', type: 'success' } 
+    }));
 
-    } catch (error) {
-      // ၃။ Error ဖြစ်လျှင် Notification လှမ်းပို့သည်
-      window.dispatchEvent(new CustomEvent('notify', { 
-        detail: { message: 'ဒေါင်းလုပ်ဆွဲရာတွင် အမှားအယွင်းရှိပါသည်။', type: 'error' } 
-      }));
-    }
-  };
+  } catch (error) {
+    window.dispatchEvent(new CustomEvent('notify', { 
+      detail: { message: 'ဒေါင်းလုပ်ဆွဲရာတွင် အမှားအယွင်းရှိပါသည်။', type: 'error' } 
+    }));
+  } finally {
+    setDownloadingId(null); // အလုပ်ပြီးရင် ပြန်ပိတ်မယ်
+  }
+};
   // Smart Player Persistence: Only close player when category or subCategory actually changes
   const searchParams = useSearchParams()
   const prevSectionRef = useRef(currentSection)
@@ -228,11 +229,21 @@ const highlightText = (text: string, query: string) => {
 />
               </div>
               <button
-                onClick={(e) => { e.stopPropagation(); forceDownload(content.content_url, content.title); }}
-                className="p-2 hover:scale-110"
-              >
-                <Download className="w-5 h-5 text-blue-400" />
-              </button>
+  onClick={(e) => { 
+    e.stopPropagation(); 
+    if (!downloadingId) forceDownload(content.content_url, content.title, String(content.id)); 
+  }}
+  className="p-2 hover:scale-110 flex items-center justify-center min-w-[40px]"
+  disabled={downloadingId === String(content.id)}
+>
+  {downloadingId === String(content.id) ? (
+    // Loading ဖြစ်နေရင် အဝိုင်းလည်မယ်
+    <span className="animate-spin inline-block w-5 h-5 border-2 border-blue-400 border-t-transparent rounded-full"></span>
+  ) : (
+    // ပုံမှန်ဆိုရင် မူလ Download Icon ပဲ ပြမယ်
+    <Download className="w-5 h-5 text-blue-400" />
+  )}
+</button>
             </div>
           </div>
         ))}

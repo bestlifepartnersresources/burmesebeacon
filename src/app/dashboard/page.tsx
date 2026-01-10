@@ -12,16 +12,14 @@ function DashboardPageContent() {
   const [content, setContent] = useState<any[]>([])
   const [isClient, setIsClient] = useState(false)
   const [hideInstallBar, setHideInstallBar] = useState(false)
-  const [isStandalone, setIsStandalone] = useState(false)
-  const { installApp } = usePWA()
+  const { isInstallable, isStandalone, installApp, isInstalling } = usePWA()
   const router = useRouter()
 
   useEffect(() => {
     setIsClient(true)
 
-    // Check if app is in standalone mode and localStorage for banner
     if (typeof window !== 'undefined') {
-      setIsStandalone(window.matchMedia('(display-mode: standalone)').matches)
+      // ဒီနေရာက setIsStandalone ကို ဖျက်လိုက်ပါ (hook က အလိုအလျောက် လုပ်ပေးလို့ပါ)
       const hideForever = localStorage.getItem('hideBannerForever')
       if (hideForever === 'true') {
         setHideInstallBar(true)
@@ -72,7 +70,7 @@ function DashboardPageContent() {
   }, [ads.length])
 
   return (
-    <div className="flex flex-col pt-24">
+    <div className="flex flex-col min-h-screen">
       {/* First: Install App Bar */}
       {!hideInstallBar && !isStandalone && (
         <div className="bg-blue-400/20 backdrop-blur-md border-b border-blue-200/30 py-3 px-6 w-full flex flex-row items-center justify-between transition-opacity duration-300">
@@ -80,12 +78,13 @@ function DashboardPageContent() {
             Install for quick and easy learning
           </h3>
           <div className="flex items-center gap-3">
-            <button
-              onClick={installApp}
-              className="bg-[#D4AF37] text-[#001f3f] px-4 py-2 rounded-lg font-bold hover:bg-[#B8962E] transition-colors whitespace-nowrap"
-            >
-              Install App
-            </button>
+<button
+   onClick={installApp}
+  disabled={isInstalling} // Loading ဖြစ်နေရင် နှိပ်လို့မရအောင် ပိတ်ထားမယ်
+  className="bg-[#D4AF37] text-[#001f3f] px-3 py-2 rounded-lg font-bold hover:bg-[#B8962E] transition-colors text-sm whitespace-nowrap"
+>
+  {isInstalling ? "Installing..." : "Install App"}
+</button>
             <button
               onClick={() => {
                 setHideInstallBar(true)
@@ -101,8 +100,8 @@ function DashboardPageContent() {
       )}
 
       {/* Second: Hero Section */}
-      <section className="relative w-full">
-        <div className="relative w-full aspect-[3/2] overflow-hidden">
+      <section className="mrelative w-full overflow-hidden">
+        <div className="relative w-full aspect-[16/9] md: aspect-[3/2] overflow-hidden">
           <Image
             src="/myanmarflag.png"
             fill

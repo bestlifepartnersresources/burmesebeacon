@@ -8,6 +8,7 @@ import Footer from '@/components/Footer'
 import { usePWA } from '@/lib/usePWA'
 import Dashboard from './Dashboard'
 
+
 function DashboardLayoutContent({
   children,
 }: {
@@ -18,7 +19,7 @@ function DashboardLayoutContent({
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [currentSection, setCurrentSection] = useState('home')
-  const { isInstallable, isStandalone, installApp } = usePWA()
+  const { isInstallable, isStandalone, installApp, isInstalling } = usePWA()
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
@@ -123,12 +124,13 @@ function DashboardLayoutContent({
             {!isStandalone && isInstallable && (
               <div className="flex items-center gap-2">
                 <span className="text-white text-sm hidden sm:inline">Install for quick learning</span>
-                <button
-                  onClick={installApp}
-                  className="bg-[#D4AF37] text-[#001f3f] px-3 py-2 rounded-lg font-bold hover:bg-[#B8962E] transition-colors text-sm whitespace-nowrap"
-                >
-                  Install App
-                </button>
+        <button
+         onClick={installApp}
+         disabled={isInstalling} // Loading ဖြစ်နေရင် နှိပ်လို့မရအောင် ပိတ်ထားမယ်
+          className="bg-[#D4AF37] text-[#001f3f] px-3 py-2 rounded-lg font-bold hover:bg-[#B8962E] transition-colors text-sm whitespace-nowrap"
+          >
+            {isInstalling ? "Installing..." : "Install App"}
+        </button>
               </div>
             )}
           </div>
@@ -160,3 +162,4 @@ export default function DashboardLayout({
     </Suspense>
   )
 }
+

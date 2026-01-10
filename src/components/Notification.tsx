@@ -30,7 +30,7 @@ export default function Notification({ message, type, onClose }: NotificationPro
       isVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'
     }`}>
       <div className="bg-[#001f3f] border-4 border-[#ffd700] rounded-lg p-4 shadow-lg flex items-center gap-3">
-        
+       
         {/* Loading Spinner - type က loading ဖြစ်နေရင် ပတ်ချာလည် icon လေး ပေါ်မယ် */}
         {type === 'loading' && (
           <div className="w-5 h-5 border-2 border-[#ffd700] border-t-transparent rounded-full animate-spin"></div>

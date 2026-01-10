@@ -51,8 +51,11 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * အောက်ပါတို့ကို Middleware ထဲ လုံးဝ မဝင်စေရ (ပုံတွေ ပေါ်ဖို့ အရေးကြီးဆုံးပါ)
+     * ၁။ API routes တွေကို ချန်မယ်
+     * ၂။ Next.js static files (_next/static, _next/image) တွေကို ချန်မယ်
+     * ၃။ PWA files (sw.js, manifest.json) တွေကို အတိအကျ ချန်မယ် (ဒါမှ Redirect မဖြစ်မှာပါ)
+     * ၄။ Images, Icons, PDFs အစရှိတဲ့ Static assets တွေကို ချန်မယ်
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|gif|svg|ico|pdf|webp)$|public/).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|manifest\\.json|sw\\.js|.*\\.(?:png|jpg|jpeg|gif|svg|ico|pdf|webp)$).*)',
   ],
 }

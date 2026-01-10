@@ -21,7 +21,7 @@ export default function SubmenuDashboard({ currentSection }: SubmenuDashboardPro
   const [hideInstallBar, setHideInstallBar] = useState(false)
   const [isStandalone, setIsStandalone] = useState(false)
   const [savedItems, setSavedItems] = useState<Set<string>>(new Set())
-  const { installApp } = usePWA()
+  const {installApp,isInstalling } = usePWA()
   const router = useRouter()
 
   useEffect(() => {
@@ -127,8 +127,8 @@ export default function SubmenuDashboard({ currentSection }: SubmenuDashboardPro
     )
 
     return (
-      <div className="pt-24 p-6">
-        <h1 className="text-2xl font-bold mb-4 text-[#ffd700]">{mappedCategory} - {mappedSubCategory} Content</h1>
+      <div className="flex flex-col min-h-screen">
+        <h1 className="text-lg md:text-2xl font-bold mb-4 text-[#ffd700] leading-snug">{mappedCategory} - {mappedSubCategory} Content</h1>
         {filteredContents.length === 0 ? (
           <p>No content available for this section yet.</p>
         ) : (
