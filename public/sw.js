@@ -1,12 +1,17 @@
-const CACHE_NAME = 'burmese-beacon-v4'; // Version တိုးလိုက်ပါ
+const CACHE_NAME = 'burmese-beacon-v5'; // Version ကို v4 လို့ တိုးလိုက်ပါ (အရေးကြီးသည်)
 const urlsToCache = [
   '/',
   '/manifest.json',
+  '/icon-512.png',
+  '/icon-152.png',
+  '/icon-192.png',
+  '/icons/icon-192x192.png',
+  '/icons/icon-512x512.png',
   '/myanmarflag.png',
   '/favicon.ico'
 ];
 
-// Install: ဖိုင်အခြေခံတွေကို သိမ်းမယ်
+// Install: အခြေခံဖိုင်တွေကို Cache လုပ်မယ်
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -20,46 +25,63 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Fetch: ဒီနေရာက အဓိက ပြင်ရမှာပါ
+// Fetch Logic:
 self.addEventListener('fetch', (event) => {
-  // ၁။ POST request (Login/Signup) တွေကို လုံးဝ Cache မလုပ်ဘဲ လွှတ်ပေးမယ်
+  // Login/Signup (POST) တွေဆိုရင် Middleware နဲ့ တိုက်ရိုက်အလုပ်လုပ်ပါစေ
   if (event.request.method !== 'GET') return;
 
   const url = new URL(event.request.url);
 
-  // ၂။ Supabase နဲ့ API တွေကို Network တိုက်ရိုက်သွားမယ် (Bypass Cache)
-  if (url.host.includes('supabase.co') || url.pathname.includes('/api/')) {
-    event.respondWith(fetch(event.request));
+  // ၁။ API နဲ့ Dynamic data (Supabase / Sidebar)
+  // အရင်အတိုင်း Network အရင်သွားပြီး မရမှ Cache ကို သုံးပါတယ်
+  if (url.pathname.includes('sidebar_content') || url.host.includes('supabase.co')) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          // Redirect handling (အရင်ပါပြီးသား logic)
+          if (response.redirected) {
+            return new Response(response.body, {
+              status: response.status,
+              statusText: response.statusText,
+              headers: response.headers
+            });
+          }
+          return response;
+        })
+        .catch(() => {
+          return caches.match(event.request);
+        })
+    );
     return;
   }
 
-  // ၃။ Network-First Strategy (အင်တာနက် အရင်ကြည့်မယ်)
+  // ၂။ Static Assets များ (ဒီနေရာကို ၅၀၃ မဖြစ်အောင် ပြင်ထားပါတယ်)
+  // Network ကို အရင်သွားမယ်၊ Middleware က Redirect လုပ်တာကို အနှောင့်အယှက်မပေးတော့ဘူး
   event.respondWith(
     fetch(event.request)
-      .then((response) => {
-        // Redirect ဖြစ်နေတဲ့ response (301, 302, 307) သို့မဟုတ် 503 ဆိုရင် Cache မလုပ်ဘူး
-        if (!response || response.status !== 200 || response.type !== 'basic') {
-          return response;
+      .then((fetchRes) => {
+        // ပုံမှန် ၂၀၀ OK ဖြစ်တဲ့ response တွေကိုပဲ Cache ထဲ ထည့်မယ်/အပ်ဒိတ်လုပ်မယ်
+        if (fetchRes.status === 200) {
+          const fetchResClone = fetchRes.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            if (url.protocol.startsWith('http')) {
+              cache.put(event.request, fetchResClone);
+            }
+          });
         }
-
-        // အဆင်ပြေတဲ့ Response ကိုမှ Cache ထဲ ထည့်မယ်
-        const responseToCache = response.clone();
-        caches.open(CACHE_NAME).then((cache) => {
-          if (url.protocol.startsWith('http')) {
-            cache.put(event.request, responseToCache);
-          }
-        });
-
-        return response;
+        return fetchRes;
       })
       .catch(() => {
-        // အင်တာနက် လုံးဝမရှိမှသာ သိမ်းထားတဲ့ Cache ထဲက ရှာမယ်
-        return caches.match(event.request);
+        // Network မရှိမှ (Offline ဖြစ်မှ) Cache ထဲက ရှာမယ်
+        // အရင် App ကအတိုင်း Offline မှာ အလုပ်လုပ်နေပါလိမ့်မယ်
+        return caches.match(event.request).then((cachedRes) => {
+          return cachedRes || caches.match('/');
+        });
       })
   );
 });
 
-// Activate: Cache အဟောင်းတွေ ရှင်းမယ်
+// Activate: Old Cache တွေကို ရှင်းမယ်
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
