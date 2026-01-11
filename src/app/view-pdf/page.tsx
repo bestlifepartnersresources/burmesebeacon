@@ -1,13 +1,12 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Suspense, useState, useEffect } from 'react'
+import { Suspense } from 'react'
 
 function ViewPDFContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const url = searchParams.get('url')
-  const [useGoogleViewer, setUseGoogleViewer] = useState(true)
 
   if (!url) {
     return <div className="flex items-center justify-center h-screen bg-[#001f3f] text-white">No PDF URL provided</div>
@@ -15,66 +14,53 @@ function ViewPDFContent() {
 
   let finalPdfUrl = url;
 
-  // Hugging Face Link Logic
+  // Hugging Face Direct Link Logic
   if (finalPdfUrl.includes('huggingface.co') && finalPdfUrl.includes('/blob/')) {
     finalPdfUrl = finalPdfUrl.replace('/blob/', '/resolve/');
   }
 
-  // Google Viewer URL
-  const googleViewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(finalPdfUrl)}&embedded=true`;
+  // PDF.js Viewer URL (Mozilla ရဲ့ တရားဝင် Viewer ကို သုံးထားပါတယ်)
+  // ဒါက ဖုန်းမှာ Download မဆွဲဘဲ Browser ထဲမှာပဲ Reader ပုံစံမျိုးနဲ့ ပြပေးမှာပါ
+  const pdfJsViewerUrl = `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(finalPdfUrl)}`;
 
   return (
     <div className="relative w-screen h-screen no-select bg-slate-900" onContextMenu={(e) => e.preventDefault()}>
       
-      {/* PDF Viewer Logic */}
-      {useGoogleViewer ? (
-        <iframe
-          src={googleViewerUrl}
-          className="w-full h-full border-none"
-          title="Google PDF Viewer"
-        />
-      ) : (
-        /* Google Viewer အဆင်မပြေရင် Browser ရဲ့ Native Viewer ကို သုံးမယ် (ဖိုင်ဆိုဒ်ကြီးများအတွက် ပိုမြန်သည်) */
-        <object
-          data={finalPdfUrl}
-          type="application/pdf"
-          className="w-full h-full"
+      {/* Header Bar */}
+      <div className="absolute top-0 left-0 right-0 h-14 bg-[#001f3f] flex items-center justify-between px-4 z-30 border-b border-white/10">
+        <button
+          onClick={() => router.back()}
+          className="text-white flex items-center gap-2 font-medium bg-white/5 px-3 py-1.5 rounded-md hover:bg-white/10"
         >
-          <iframe src={finalPdfUrl} className="w-full h-full border-none" />
-        </object>
-      )}
-
-      {/* Floating Control Buttons */}
-      <div className="absolute top-4 left-4 right-4 flex justify-between items-center z-20">
+          ‹ Back
+        </button>
+        
         <div className="flex gap-2">
-          <button
-            onClick={() => router.back()}
-            className="bg-[#001f3f]/90 backdrop-blur text-white px-4 py-2 rounded-lg hover:bg-[#002f5f] transition-all shadow-xl text-sm border border-white/10"
+           <a 
+            href={finalPdfUrl}
+            target="_blank" 
+            className="bg-yellow-500 text-black px-4 py-1.5 rounded-md font-bold text-xs"
           >
-            ← Back
-          </button>
-          
-          <button
-            onClick={() => setUseGoogleViewer(!useGoogleViewer)}
-            className="bg-white/10 backdrop-blur text-white px-4 py-2 rounded-lg hover:bg-white/20 transition-all shadow-xl text-sm border border-white/20"
-          >
-            {useGoogleViewer ? "Switch to Native" : "Switch to Google Viewer"}
-          </button>
+            DOWNLOAD
+          </a>
         </div>
-
-        <a 
-          href={finalPdfUrl}
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="bg-yellow-500 text-black px-4 py-2 rounded-lg font-bold shadow-xl hover:bg-yellow-400 transition-all flex items-center gap-2 text-sm"
-        >
-          Direct View
-        </a>
       </div>
 
-      {/* Watermark Overlay (Optionally protects from easy screenshots) */}
-      <div className="absolute inset-0 pointer-events-none border-[15px] border-white/5 flex items-center justify-center">
-         <p className="text-white/5 -rotate-45 text-6xl font-bold uppercase tracking-widest">Burmese Beacon</p>
+      {/* PDF.js Viewer Iframe */}
+      <div className="w-full h-full pt-14">
+        <iframe
+          src={pdfJsViewerUrl}
+          className="w-full h-full border-none"
+          title="Professional PDF Viewer"
+          allow="fullscreen"
+        />
+      </div>
+
+      {/* Anti-Screenshot Watermark */}
+      <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden">
+         <p className="text-white/[0.03] -rotate-45 text-8xl font-black uppercase select-none">
+           Burmese Beacon
+         </p>
       </div>
     </div>
   )
@@ -83,12 +69,9 @@ function ViewPDFContent() {
 export default function ViewPDF() {
   return (
     <Suspense fallback={
-      <div className="flex flex-col items-center justify-center h-screen bg-[#001f3f] text-white gap-4">
-        <div className="w-12 h-12 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
-        <div className="text-center">
-          <p className="text-lg font-bold">Document Loading...</p>
-          <p className="text-xs text-white/50">Large files may take a moment</p>
-        </div>
+      <div className="flex flex-col items-center justify-center h-screen bg-[#001f3f] text-white">
+        <div className="w-12 h-12 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p className="text-sm font-bold tracking-widest animate-pulse">LOADING SECURE READER...</p>
       </div>
     }>
       <ViewPDFContent />
