@@ -1,6 +1,7 @@
 'use client'
 import { Geist, Geist_Mono } from "next/font/google";
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import "./globals.css";
 import SplashScreen from "@/components/SplashScreen";
 import PWA from "@/components/PWA";
@@ -22,21 +23,25 @@ const geistMono = Geist_Mono({
 });
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
-  const [showSplash, setShowSplash] = useState(false); // အစမှာ false ထားပါ
+  const [showSplash, setShowSplash] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [notifications, setNotifications] = useState<Array<{ id: string; message: string }>>([]);
+  const pathname = usePathname();
 
   useEffect(() => {
     setMounted(true);
 
-    // ၁။ Session မှာ ကြည့်ဖူးလား စစ်မယ်
-    const hasSeenSplash = sessionStorage.getItem('hasSeenSplash');
-    
-    // ၂။ မကြည့်ရသေးရင် Splash ကို ဖွင့်မယ်
-    if (!hasSeenSplash) {
-      setShowSplash(true);
+    // Overview Page (/) ဖြစ်မှ Splash ပြဖို့ စစ်မယ်
+    if (pathname === '/') {
+      const hasSeenSplash = sessionStorage.getItem('hasSeenSplash');
+      if (!hasSeenSplash) {
+        setShowSplash(true);
+      }
+    } else {
+      setShowSplash(false);
     }
 
+    // Notification Logic
     const handleNotify = (event: any) => {
       const id = Math.random().toString(36).substring(2, 9);
       const message = event.detail?.message || "Success!";
@@ -45,21 +50,23 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
     window.addEventListener('notify', handleNotify as EventListener);
     return () => window.removeEventListener('notify', handleNotify as EventListener);
-  }, []);
+  }, [pathname]);
 
   const handleSplashComplete = () => {
     setShowSplash(false);
     sessionStorage.setItem('hasSeenSplash', 'true');
   };
 
-  // ၃။ Hydration error မဖြစ်အောင် Mounted မဖြစ်ခင် ဘာမှမပြသေးဘူး
+  const removeNotification = (id: string) => {
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+  };
+
   if (!mounted) return null;
 
   return (
     <div className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#001f3f] text-white min-h-screen relative`}>
-      
-      {/* ၄။ Splash Screen ကို နေရာလွတ်မထားဘဲ အပေါ်ဆုံးက ထပ်ပြမယ် */}
-      {showSplash ? (
+      {/* Overview Page ဖြစ်မှ Splash ပြမယ် */}
+      {pathname === '/' && showSplash ? (
         <SplashScreen onComplete={handleSplashComplete} />
       ) : (
         <>
@@ -67,13 +74,13 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           <PWAInstallPrompt />
           <main>{children}</main>
           
-          {/* Notifications */}
+          {/* Notifications UI */}
           <div className="fixed top-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none">
             {notifications.map((n) => (
               <div key={n.id} className="pointer-events-auto">
                 <Notification
                   message={n.message}
-                  onClose={() => setNotifications(prev => prev.filter(item => item.id !== n.id))}
+                  onClose={() => removeNotification(n.id)}
                 />
               </div>
             ))}
