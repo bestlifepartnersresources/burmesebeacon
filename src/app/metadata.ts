@@ -1,6 +1,10 @@
 // src/app/metadata.ts
-import type { Metadata } from "next";
-
+import type { Metadata, Viewport } from "next";
+export const viewport: Viewport = {
+  themeColor: "#001f3f",
+  width: "device-width",
+  initialScale: 1,
+};
 export const metadata: Metadata = {
   manifest: "/manifest.json", // ဒါကို ထည့်ပေးမှ Browser က PWA မှန်း သိမှာပါ
   title: "Burmese Beacon",

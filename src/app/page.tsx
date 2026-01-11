@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Logo from '@/components/Logo'
 import Footer from '@/components/Footer'
-import { usePWA } from '@/lib/usePWA'
+
 import { getDirectVideoLink } from '@/lib/helpers'
 
 export default function Home() {
@@ -14,7 +14,6 @@ export default function Home() {
   const [currentAdIndex, setCurrentAdIndex] = useState(0)
   const [content, setContent] = useState<any[]>([])
   const [isClient, setIsClient] = useState(false)
-  const { isInstallable, isStandalone, installApp, isInstalling } = usePWA()
   const router = useRouter()
 
   useEffect(() => {
@@ -86,18 +85,7 @@ export default function Home() {
     <Logo />
     
     {/* ညာဘက်ခြမ်း: စာသားနဲ့ ခလုတ်ကို အပေါ်အောက် ထပ်မယ် */}
-    <div className="flex flex-col md:flex-row items-center md:items-center gap-1 md:gap-4"> 
-      <span className="text-white text-[10px] md:text-sm opacity-80 leading-tight whitespace-nowrap">
-        Install for quick learning
-      </span>
-      <button
-        onClick={installApp}
-        disabled={isInstalling}
-        className="bg-[#D4AF37] text-[#001f3f] px-3 py-1.5 md:px-5 md:py-2 rounded-lg font-bold hover:bg-[#B8962E] transition-colors text-[10px] md:text-sm whitespace-nowrap shadow-md"
-      >
-        {isInstalling ? "Installing..." : "Install App"}
-      </button>
-    </div>
+    
   </div>
 </header>
 
@@ -118,12 +106,33 @@ export default function Home() {
             <p className="text-white/90 text-[10px] md:text-lg mb-4 md:mb-8 max-w-2xl">
               Master legal topics through engaging videos and audio content.
             </p>
-            <button
-              onClick={handleGetStart}
-              className="px-6 py-2 md:px-10 md:py-4 text-xs md:text-xl font-bold text-[#001f3f] rounded-lg bg-[#D4AF37] hover:bg-[#B8962E] transition-all shadow-lg active:scale-95"
-            >
-              Get Started
-            </button>
+            {/* Hero Section ထဲက ခလုတ်နေရာ */}
+<div className="mt-6">
+  <style jsx>{`
+    @keyframes border-rotate {
+      0% { border-color: #ffd700; }
+      33% { border-color: #22c55e; }
+      66% { border-color: #ef4444; }
+      100% { border-color: #ffd700; }
+    }
+    @keyframes bg-pulse {
+      0% { background-color: #D4AF37; color: #001f3f; box-shadow: 0 0 10px #D4AF37; }
+      50% { background-color: #001f3f; color: #D4AF37; box-shadow: 0 0 25px #D4AF37; }
+      100% { background-color: #D4AF37; color: #001f3f; box-shadow: 0 0 10px #D4AF37; }
+    }
+    .custom-btn {
+      animation: border-rotate 0.5s linear infinite, bg-pulse 10s ease-in-out infinite;
+      border: 3px solid;
+    }
+  `}</style>
+  
+  <button
+    onClick={handleGetStart}
+    className="custom-btn px-8 py-3 md:px-10 md:py-4 text-xs md:text-lg font-extrabold rounded-xl transition-transform active:scale-90 uppercase"
+  >
+    Get Started
+  </button>
+</div>
           </div>
         </div>
       </section>

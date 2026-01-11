@@ -120,19 +120,7 @@ function DashboardLayoutContent({
     </button>
   )}
 
-            {/* Install App Button */}
-            {!isStandalone && isInstallable && (
-              <div className="flex items-center gap-2">
-                <span className="text-white text-sm hidden sm:inline">Install for quick learning</span>
-        <button
-         onClick={installApp}
-         disabled={isInstalling} // Loading ဖြစ်နေရင် နှိပ်လို့မရအောင် ပိတ်ထားမယ်
-          className="bg-[#D4AF37] text-[#001f3f] px-3 py-2 rounded-lg font-bold hover:bg-[#B8962E] transition-colors text-sm whitespace-nowrap"
-          >
-            {isInstalling ? "Installing..." : "Install App"}
-        </button>
-              </div>
-            )}
+           
           </div>
         </div>
       </header>

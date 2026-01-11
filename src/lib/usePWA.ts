@@ -7,53 +7,37 @@ export function usePWA() {
   const [isInstalling, setIsInstalling] = useState(false)
 
   useEffect(() => {
-    // Check if app is already running as PWA
-    const checkStandalone = () => {
-      const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
-                          (window.navigator as any).standalone === true ||
-                          document.referrer.includes('android-app://')
-      setIsStandalone(isStandalone)
-    }
+  const checkStandalone = () => {
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
+                         (window.navigator as any).standalone === true;
+    setIsStandalone(isStandalone);
+  };
 
-    checkStandalone()
+  checkStandalone();
 
-    const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault()
-      setDeferredPrompt(e)
-      setIsInstallable(true)
-    }
+  const handleBeforeInstallPrompt = (e: any) => {
+    e.preventDefault();
+    setDeferredPrompt(e);
+    setIsInstallable(true);
+    console.log("Install prompt is ready"); // စစ်ဆေးရန်
+  };
 
-    const handleAppInstalled = () => {
-      setIsInstallable(false)
-      setDeferredPrompt(null)
-      setIsStandalone(true)
-      setIsInstalling(false) // သွင်းပြီးရင် Loading ပိတ်မယ်
-    }
+  const handleAppInstalled = () => {
+    setIsInstallable(false);
+    setDeferredPrompt(null);
+    setIsStandalone(true);
+    setIsInstalling(false);
+  };
 
-    // Listen for display mode changes
-    const handleDisplayModeChange = (e: MediaQueryListEvent) => {
-      setIsStandalone(e.matches)
-    }
+  // 'BeforeInstallPromptEvent' in window ဆိုတဲ့ check ကို ဖြုတ်လိုက်ပါ
+  window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+  window.addEventListener('appinstalled', handleAppInstalled);
 
-    if ('serviceWorker' in navigator && 'BeforeInstallPromptEvent' in window) {
-      window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
-      window.addEventListener('appinstalled', handleAppInstalled)
-
-      const mediaQuery = window.matchMedia('(display-mode: standalone)')
-      mediaQuery.addEventListener('change', handleDisplayModeChange)
-    }
-
-    return () => {
-     if (typeof window !== 'undefined') {
-  window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
-  window.addEventListener('appinstalled', handleAppInstalled)
-
-  const mediaQuery = window.matchMedia('(display-mode: standalone)')
-  mediaQuery.addEventListener('change', handleDisplayModeChange)
-}
-        
-   }
-  }, [])
+  return () => {
+    window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.removeEventListener('appinstalled', handleAppInstalled);
+  };
+}, []);
 const installApp = async () => {
     // ၁။ Install လုပ်လို့ရမရ အရင်စစ်မယ်
     if (!deferredPrompt) {

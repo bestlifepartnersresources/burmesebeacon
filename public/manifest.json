@@ -1,8 +1,8 @@
 {
   "name": "Burmese Beacon",
-  "short_name": "Burmese Beacon",
-  "description": "Legal education platform for Myanmar law with AI-powered assistance",
-  "start_url": "/",
+  "short_name": "Burmesebeacon",
+  "description": "Legal education platform for Myanmar law",
+  "start_url": "/dashboard",
   "display": "standalone",
   "background_color": "#001f3f",
   "theme_color": "#ffd700",
@@ -10,28 +10,32 @@
   "scope": "/",
   "icons": [
     {
-      "src": "/icon-152.png",
-      "sizes": "152x152",
-      "type": "image/png"
-    },
-    {
-      "src": "/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192 512x512 832x832",
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/icons/icon-192x192.png",
-      "sizes": "192x192",
+      "sizes": "192x192 512x512 832x832",
       "type": "image/png",
       "purpose": "maskable"
-    },
-    {
-      "src": "/icons/icon-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png"
     }
   ],
-  "categories": ["education", "productivity", "utilities"],
-  "lang": "en",
-  "dir": "ltr"
+  "screenshots": [
+  {
+    "src": "/screenshots/desktop-ss.png",
+    "sizes": "1920x1080",
+    "type": "image/png",
+    "form_factor": "wide",
+    "label": "Burmese Beacon Dashboard"
+  },
+  {
+    "src": "/screenshots/mobile-ss.png",
+    "sizes": "1080x1920",
+    "type": "image/png",
+    "form_factor": "narrow",
+    "label": "Burmese Beacon Mobile View"
+  }
+]
 }

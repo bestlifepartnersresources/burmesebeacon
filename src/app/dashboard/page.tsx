@@ -25,8 +25,7 @@ function DashboardPageContent() {
         setHideInstallBar(true)
       }
     }
-
-    // Fetch ads from home_ads table
+       // Fetch ads from home_ads table
     const fetchAds = async () => {
       const { data, error } = await supabase
         .from('home_ads')
@@ -58,6 +57,13 @@ function DashboardPageContent() {
     fetchAds()
     fetchContent()
   }, [])
+  // ၃။ App သွင်းပြီးတာနဲ့ ချက်ချင်း ဖျောက်ဖို့ useEffect အသစ်တစ်ခု ထည့်ပါ
+useEffect(() => {
+  if (isStandalone) {
+    setHideInstallBar(true);
+    localStorage.setItem('hideBannerForever', 'true');
+  }
+}, [isStandalone]);
 
   useEffect(() => {
     if (ads.length > 0) {
