@@ -22,41 +22,64 @@ const geistMono = Geist_Mono({
 });
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
+  const [showSplash, setShowSplash] = useState(false); // အစမှာ false ထားပါ
   const [mounted, setMounted] = useState(false);
-  const [showSplash, setShowSplash] = useState(false);
   const [notifications, setNotifications] = useState<Array<{ id: string; message: string }>>([]);
-
-  const addNotification = (message: string) => {
-    const id = Math.random().toString(36).substring(2, 9);
-    setNotifications((prev) => [...prev, { id, message }]);
-  };
-
-  const removeNotification = (id: string) => {
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
-  };
 
   useEffect(() => {
     setMounted(true);
-    const handleNotify = (event: CustomEvent) => {
-      addNotification(event.detail.message);
+
+    // ၁။ Session မှာ ကြည့်ဖူးလား စစ်မယ်
+    const hasSeenSplash = sessionStorage.getItem('hasSeenSplash');
+    
+    // ၂။ မကြည့်ရသေးရင် Splash ကို ဖွင့်မယ်
+    if (!hasSeenSplash) {
+      setShowSplash(true);
+    }
+
+    const handleNotify = (event: any) => {
+      const id = Math.random().toString(36).substring(2, 9);
+      const message = event.detail?.message || "Success!";
+      setNotifications((prev) => [...prev, { id, message }]);
     };
+
     window.addEventListener('notify', handleNotify as EventListener);
     return () => window.removeEventListener('notify', handleNotify as EventListener);
   }, []);
 
+  const handleSplashComplete = () => {
+    setShowSplash(false);
+    sessionStorage.setItem('hasSeenSplash', 'true');
+  };
+
+  // ၃။ Hydration error မဖြစ်အောင် Mounted မဖြစ်ခင် ဘာမှမပြသေးဘူး
+  if (!mounted) return null;
+
   return (
-    <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#001f3f] text-white min-h-screen`}>
-      {mounted && showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
-      <PWA />
-      <PWAInstallPrompt />
-      {children}
-      {notifications.map(notification => (
-        <Notification
-          key={notification.id}
-          message={notification.message}
-          onClose={() => removeNotification(notification.id)}
-        />
-      ))}
-    </body>
+    <div className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#001f3f] text-white min-h-screen relative`}>
+      
+      {/* ၄။ Splash Screen ကို နေရာလွတ်မထားဘဲ အပေါ်ဆုံးက ထပ်ပြမယ် */}
+      {showSplash ? (
+        <SplashScreen onComplete={handleSplashComplete} />
+      ) : (
+        <>
+          <PWA />
+          <PWAInstallPrompt />
+          <main>{children}</main>
+          
+          {/* Notifications */}
+          <div className="fixed top-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none">
+            {notifications.map((n) => (
+              <div key={n.id} className="pointer-events-auto">
+                <Notification
+                  message={n.message}
+                  onClose={() => setNotifications(prev => prev.filter(item => item.id !== n.id))}
+                />
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
   );
 }
