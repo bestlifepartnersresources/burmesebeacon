@@ -57,6 +57,6 @@ export const config = {
     /*
      * middleware မဖြတ်ရမယ့် path တွေကို ဒီမှာ skip ထားတယ်
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|manifest\\.json|sw\\.js|.*\\.(?:png|jpg|jpeg|gif|svg|ico|pdf|webp)$).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|manifest\\.json|sitemap.xml|sw\\.js|.*\\.(?:png|jpg|jpeg|gif|svg|ico|pdf|webp)$).*)',
   ],
 }
