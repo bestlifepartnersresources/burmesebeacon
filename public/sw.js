@@ -28,10 +28,14 @@ self.addEventListener('install', (event) => {
 // Fetch Logic:
 self.addEventListener('fetch', (event) => {
   // Login/Signup (POST) တွေဆိုရင် Middleware နဲ့ တိုက်ရိုက်အလုပ်လုပ်ပါစေ
-  if (event.request.method !== 'GET') return;
-
   const url = new URL(event.request.url);
-
+  // --- ဒီအပိုင်းကို အသစ်ထည့်ပေးပါ ---
+  // Sitemap နဲ့ Robots.txt တို့ကို Service Worker က လုံးဝ မထိအောင် ကျော်ခိုင်းလိုက်မယ်
+  if (url.pathname.includes('sitemap.xml') || url.pathname.includes('robots.txt')) {
+    return; // ဘာမှမလုပ်ဘဲ Network ကို တိုက်ရိုက်သွားခိုင်းတာပါ
+  }
+// Login/Signup (POST) တွေဆိုရင် Middleware နဲ့ တိုက်ရိုက်အလုပ်လုပ်ပါစေ
+  if (event.request.method !== 'GET') return;
   // ၁။ API နဲ့ Dynamic data (Supabase / Sidebar)
   // အရင်အတိုင်း Network အရင်သွားပြီး မရမှ Cache ကို သုံးပါတယ်
   if (url.pathname.includes('sidebar_content') || url.host.includes('supabase.co')) {
