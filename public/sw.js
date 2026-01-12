@@ -1,4 +1,4 @@
-const CACHE_NAME = 'burmese-beacon-v5'; // Version ကို v4 လို့ တိုးလိုက်ပါ (အရေးကြီးသည်)
+const CACHE_NAME = 'burmese-beacon-v6'; // Version ကို v4 လို့ တိုးလိုက်ပါ (အရေးကြီးသည်)
 const urlsToCache = [
   '/',
   '/manifest.json',
@@ -27,22 +27,27 @@ self.addEventListener('install', (event) => {
 
 // Fetch Logic:
 self.addEventListener('fetch', (event) => {
-  // Login/Signup (POST) တွေဆိုရင် Middleware နဲ့ တိုက်ရိုက်အလုပ်လုပ်ပါစေ
   const url = new URL(event.request.url);
-  // --- ဒီအပိုင်းကို အသစ်ထည့်ပေးပါ ---
-  // Sitemap နဲ့ Robots.txt တို့ကို Service Worker က လုံးဝ မထိအောင် ကျော်ခိုင်းလိုက်မယ်
-  if (url.pathname.includes('sitemap.xml') || url.pathname.includes('robots.txt')) {
-    return; // ဘာမှမလုပ်ဘဲ Network ကို တိုက်ရိုက်သွားခိုင်းတာပါ
+
+  // ၁။ လုံးဝ (လုံးဝ) မထိရမယ့် URL များ (Bypass)
+  // Sitemap, Robots နဲ့ PDF viewer (PDF.js) ဖိုင်တွေကို Network တိုက်ရိုက်သွားခိုင်းမယ်
+  if (
+    url.pathname.includes('sitemap.xml') || 
+    url.pathname.includes('robots.txt') ||
+    url.pathname.includes('/pdfjs/') || // PDF.js library ဖိုင်တွေ
+    url.pathname.endsWith('.pdf')       // PDF ဖိုင်တွေ
+  ) {
+    return; // Service Worker က ဘာမှမလုပ်ဘဲ ကျော်သွားမှာပါ
   }
-// Login/Signup (POST) တွေဆိုရင် Middleware နဲ့ တိုက်ရိုက်အလုပ်လုပ်ပါစေ
+
+  // ၂။ GET မဟုတ်ရင် (POST/PUT စသည်) ကျော်မယ်
   if (event.request.method !== 'GET') return;
-  // ၁။ API နဲ့ Dynamic data (Supabase / Sidebar)
-  // အရင်အတိုင်း Network အရင်သွားပြီး မရမှ Cache ကို သုံးပါတယ်
+
+  // ၃။ API နဲ့ Dynamic data (Supabase / Sidebar)
   if (url.pathname.includes('sidebar_content') || url.host.includes('supabase.co')) {
     event.respondWith(
       fetch(event.request)
         .then((response) => {
-          // Redirect handling (အရင်ပါပြီးသား logic)
           if (response.redirected) {
             return new Response(response.body, {
               status: response.status,
@@ -52,19 +57,15 @@ self.addEventListener('fetch', (event) => {
           }
           return response;
         })
-        .catch(() => {
-          return caches.match(event.request);
-        })
+        .catch(() => caches.match(event.request))
     );
     return;
   }
 
-  // ၂။ Static Assets များ (ဒီနေရာကို ၅၀၃ မဖြစ်အောင် ပြင်ထားပါတယ်)
-  // Network ကို အရင်သွားမယ်၊ Middleware က Redirect လုပ်တာကို အနှောင့်အယှက်မပေးတော့ဘူး
+  // ၄။ Static Assets များ (Images, Scripts, HTML)
   event.respondWith(
     fetch(event.request)
       .then((fetchRes) => {
-        // ပုံမှန် ၂၀၀ OK ဖြစ်တဲ့ response တွေကိုပဲ Cache ထဲ ထည့်မယ်/အပ်ဒိတ်လုပ်မယ်
         if (fetchRes.status === 200) {
           const fetchResClone = fetchRes.clone();
           caches.open(CACHE_NAME).then((cache) => {
@@ -76,14 +77,12 @@ self.addEventListener('fetch', (event) => {
         return fetchRes;
       })
       .catch(() => {
-        // Network မရှိမှ (Offline ဖြစ်မှ) Cache ထဲက ရှာမယ်
-        // အရင် App ကအတိုင်း Offline မှာ အလုပ်လုပ်နေပါလိမ့်မယ်
         return caches.match(event.request).then((cachedRes) => {
           return cachedRes || caches.match('/');
         });
       })
   );
-});
+});      
 
 // Activate: Old Cache တွေကို ရှင်းမယ်
 self.addEventListener('activate', (event) => {
