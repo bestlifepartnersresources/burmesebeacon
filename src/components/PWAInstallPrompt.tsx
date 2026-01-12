@@ -72,6 +72,7 @@ export default function PWAInstallPrompt() {
         >
           Install
         </button>
+        
       </div>
       <button
         onClick={() => setShowInstallButton(false)}

@@ -251,7 +251,7 @@ export default function Sidebar({ isOpen, onClose, onSectionChange }: SidebarPro
           </nav>
 
           <div className="mt-8 pt-8 border-t border-[#ffd700]">
-            <button onClick={handleLogout} className="w-full text-left text-[#ffd700] hover:bg-[#ffd700] hover:text-[#001f3f] py-2 px-4 rounded transition-colors">
+          <button onClick={handleLogout} className="w-full text-left text-[#ffd700] hover:bg-[#ffd700] hover:text-[#001f3f] py-2 px-4 rounded transition-colors">
               Logout
             </button>
           </div>
