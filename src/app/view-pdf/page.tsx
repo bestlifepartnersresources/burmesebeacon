@@ -6,22 +6,25 @@ import { Suspense } from 'react'
 function ViewPDFContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const url = searchParams.get('url')
+  const rawUrl = searchParams.get('url')
 
-  if (!url) {
+  if (!rawUrl) {
     return <div className="flex items-center justify-center h-screen bg-[#001f3f] text-white">No PDF URL provided</div>
   }
 
-  let finalPdfUrl = url;
+  // ၁။ URL ကို Decode နှစ်ခါလုပ်ပေးရပါမယ် (ဒါမှ %3A နဲ့ %2F တွေ အကုန်ပြေသွားမှာပါ)
+  let finalPdfUrl = decodeURIComponent(decodeURIComponent(rawUrl));
 
-  // Hugging Face Direct Link Logic
-  if (finalPdfUrl.includes('huggingface.co') && finalPdfUrl.includes('/blob/')) {
-    finalPdfUrl = finalPdfUrl.replace('/blob/', '/resolve/');
+  // ၂။ Hugging Face Logic (blob ကို resolve ပြောင်းတာအပြင် link ကို သန့်စင်ပေးပါမယ်)
+  if (finalPdfUrl.includes('huggingface.co')) {
+    if (finalPdfUrl.includes('/blob/')) {
+      finalPdfUrl = finalPdfUrl.replace('/blob/', '/resolve/');
+    }
   }
 
-  // PDF.js Viewer URL (Mozilla ရဲ့ တရားဝင် Viewer ကို သုံးထားပါတယ်)
-  // ဒါက ဖုန်းမှာ Download မဆွဲဘဲ Browser ထဲမှာပဲ Reader ပုံစံမျိုးနဲ့ ပြပေးမှာပါ
-  const pdfJsViewerUrl = `https://mozilla.github.io/pdf.js/web/viewer.html?file=${encodeURIComponent(finalPdfUrl)}`;
+  // ၃။ Google Docs Viewer က Hugging Face PDF တွေကို အကောင်းဆုံး ဖတ်ပေးနိုင်ပါတယ်
+  // encodeURIComponent ကို ဒီမှာပဲ သုံးရပါမယ်
+  const viewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(finalPdfUrl)}&embedded=true`;
 
   return (
     <div className="relative w-screen h-screen no-select bg-slate-900" onContextMenu={(e) => e.preventDefault()}>
@@ -34,13 +37,12 @@ function ViewPDFContent() {
         >
           ‹ Back
         </button>       
-        
       </div>
 
-      {/* PDF.js Viewer Iframe */}
+      {/* PDF Viewer Iframe */}
       <div className="w-full h-full pt-14">
         <iframe
-          src={pdfJsViewerUrl}
+          src={viewerUrl}
           className="w-full h-full border-none"
           title="Professional PDF Viewer"
           allow="fullscreen"
@@ -50,7 +52,7 @@ function ViewPDFContent() {
       {/* Anti-Screenshot Watermark */}
       <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden">
          <p className="text-white/[0.03] -rotate-45 text-8xl font-black uppercase select-none">
-           Burmese Beacon
+            Burmese Beacon
          </p>
       </div>
     </div>
