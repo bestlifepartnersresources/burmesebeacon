@@ -7,14 +7,16 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  // အခု Warning ပြနေတဲ့ metadataBase ကို ဒီမှာ ထည့်လိုက်ပါ
+  metadataBase: new URL("https://burmesebeacon.com"), 
+
   manifest: "/manifest.json", 
   title: {
-    default: "Burmese Beacon - Digital Law Library", // အမည်အပြည့်အစုံ
-    template: "%s | Burmese Beacon" // တခြား Page တွေမှာ ဥပမာ - Login | Burmese Beacon လို့ ပေါ်ဖို့
+    default: "Burmese Beacon - Digital Law Library",
+    template: "%s | Burmese Beacon"
   },
   description: "ပြည်ထောင်စုသမ္မတမြန်မာနိုင်ငံတော်၏ ဥပဒေအဖြာဖြာကို အလွယ်တကူ လေ့လာသင်ယူနိုင်သော Digital Law Library",
   
-  // Google မှာ ရှာရင် ပေါ်မယ့် URL အမှန် (Canonical URL)
   alternates: {
     canonical: "https://burmesebeacon.com",
   },
