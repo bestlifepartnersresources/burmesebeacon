@@ -1,4 +1,4 @@
-const CACHE_NAME = 'burmese-beacon-v7'; // Version ကို v4 လို့ တိုးလိုက်ပါ (အရေးကြီးသည်)
+const CACHE_NAME = 'burmese-beacon-v20'; // Version ကို v4 လို့ တိုးလိုက်ပါ (အရေးကြီးသည်)
 const urlsToCache = [
   '/',
   '/manifest.json',
@@ -10,81 +10,15 @@ const urlsToCache = [
   '/myanmarflag.png',
   '/favicon.ico'
 ];
-
-// Install: အခြေခံဖိုင်တွေကို Cache လုပ်မယ်
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return Promise.all(
-        urlsToCache.map(url => {
-          return cache.add(url).catch(err => console.log('Failed to cache:', url));
-        })
-      );
+      return cache.addAll(urlsToCache);
     })
   );
   self.skipWaiting();
 });
 
-// Fetch Logic:
-self.addEventListener('fetch', (event) => {
-  const url = new URL(event.request.url);
-
-  // ၁။ လုံးဝ (လုံးဝ) မထိရမယ့် URL များ (Bypass)
-  // Sitemap, Robots နဲ့ PDF viewer (PDF.js) ဖိုင်တွေကို Network တိုက်ရိုက်သွားခိုင်းမယ်
-  if (
-    url.pathname.includes('sitemap.xml') || 
-    url.pathname.includes('robots.txt') ||
-    url.pathname.includes('/pdfjs/') || // PDF.js library ဖိုင်တွေ
-    url.pathname.endsWith('.pdf')       // PDF ဖိုင်တွေ
-  ) {
-    return; // Service Worker က ဘာမှမလုပ်ဘဲ ကျော်သွားမှာပါ
-  }
-
-  // ၂။ GET မဟုတ်ရင် (POST/PUT စသည်) ကျော်မယ်
-  if (event.request.method !== 'GET') return;
-
-  // ၃။ API နဲ့ Dynamic data (Supabase / Sidebar)
-  if (url.pathname.includes('sidebar_content') || url.host.includes('supabase.co')) {
-    event.respondWith(
-      fetch(event.request)
-        .then((response) => {
-          if (response.redirected) {
-            return new Response(response.body, {
-              status: response.status,
-              statusText: response.statusText,
-              headers: response.headers
-            });
-          }
-          return response;
-        })
-        .catch(() => caches.match(event.request))
-    );
-    return;
-  }
-
-  // ၄။ Static Assets များ (Images, Scripts, HTML)
-  event.respondWith(
-    fetch(event.request)
-      .then((fetchRes) => {
-        if (fetchRes.status === 200) {
-          const fetchResClone = fetchRes.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            if (url.protocol.startsWith('http')) {
-              cache.put(event.request, fetchResClone);
-            }
-          });
-        }
-        return fetchRes;
-      })
-      .catch(() => {
-        return caches.match(event.request).then((cachedRes) => {
-          return cachedRes || caches.match('/');
-        });
-      })
-  );
-});      
-
-// Activate: Old Cache တွေကို ရှင်းမယ်
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -98,4 +32,27 @@ self.addEventListener('activate', (event) => {
     })
   );
   return self.clients.claim();
+});
+
+// Fetch Logic ကို အရှင်းဆုံး ပြောင်းလိုက်ပါပြီ
+self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
+
+  // PDF, Sitemap, API requests တွေကို Service Worker က လုံးဝ မထိအောင် လုပ်လိုက်ပါပြီ
+  if (
+    url.pathname.endsWith('.pdf') || 
+    url.pathname.includes('/pdfjs') || 
+    url.pathname.includes('sitemap.xml') || 
+    url.pathname.includes('api') || 
+    url.host.includes('supabase.co')
+  ) {
+    return; // Browser ကို သူ့ဘာသာ Network ကနေပဲ တိုက်ရိုက်ယူခိုင်းတာပါ
+  }
+
+  // ကျန်တဲ့ ပုံမှန်စာမျက်နှာတွေအတွက် Network ကို အရင်သွားမယ်၊ မရမှ Cache ကို သုံးမယ်
+  event.respondWith(
+    fetch(event.request).catch(() => {
+      return caches.match(event.request);
+    })
+  );
 });
