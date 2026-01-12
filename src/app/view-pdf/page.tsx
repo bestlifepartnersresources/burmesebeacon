@@ -1,70 +1,73 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Suspense } from 'react'
+import { Suspense, useMemo } from 'react'
+import { Worker, Viewer } from '@react-pdf-viewer/core'
+import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout'
+
+// လိုအပ်တဲ့ CSS Styles တွေကို Import လုပ်ပါ
+import '@react-pdf-viewer/core/lib/styles/index.css'
+import '@react-pdf-viewer/default-layout/lib/styles/index.css'
 
 function ViewPDFContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const rawUrl = searchParams.get('url')
+  
+  // PDF Viewer ရဲ့ Toolbar တွေ (Sidebar, Zoom, Print) ပါတဲ့ Plugin ကို ခေါ်ယူခြင်း
+  const defaultLayoutPluginInstance = defaultLayoutPlugin()
 
-  if (!rawUrl) {
-    return <div className="flex items-center justify-center h-screen bg-[#001f3f] text-white">No PDF URL provided</div>
-  }
-
-  // ၁။ URL ကို Decode နှစ်ခါလုပ်ပေးရပါမယ် (ဒါမှ %3A နဲ့ %2F တွေ အကုန်ပြေသွားမှာပါ)
-  let finalPdfUrl = decodeURIComponent(decodeURIComponent(rawUrl));
-
-  // ၂။ Hugging Face Logic (blob ကို resolve ပြောင်းတာအပြင် link ကို သန့်စင်ပေးပါမယ်)
-  if (finalPdfUrl.includes('huggingface.co')) {
-    if (finalPdfUrl.includes('/blob/')) {
-      finalPdfUrl = finalPdfUrl.replace('/blob/', '/resolve/');
+  // URL ထဲက %2F တွေကို Decode လုပ်ပြီး Hugging Face လင့်ခ်ကို ပြင်ဆင်ခြင်း
+  const finalPdfUrl = useMemo(() => {
+    if (!rawUrl) return null
+    let decoded = decodeURIComponent(decodeURIComponent(rawUrl))
+    if (decoded.includes('huggingface.co')) {
+      return decoded.replace('/blob/', '/resolve/')
     }
-  }
+    return decoded
+  }, [rawUrl])
 
-  // ၃။ Google Docs Viewer က Hugging Face PDF တွေကို အကောင်းဆုံး ဖတ်ပေးနိုင်ပါတယ်
-  // encodeURIComponent ကို ဒီမှာပဲ သုံးရပါမယ်
-  const viewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(finalPdfUrl)}&embedded=true`;
+  if (!finalPdfUrl) {
+    return <div className="flex items-center justify-center h-screen bg-[#001f3f] text-white">PDF လင့်ခ် ရှာမတွေ့ပါ</div>
+  }
 
   return (
-    <div className="relative w-screen h-screen no-select bg-slate-900" onContextMenu={(e) => e.preventDefault()}>
-      
+    <div className="flex flex-col h-screen bg-[#001f3f]">
       {/* Header Bar */}
-      <div className="absolute top-0 left-0 right-0 h-14 bg-[#001f3f] flex items-center justify-between px-4 z-30 border-b border-white/10">
+      <div className="h-14 bg-[#001f3f] flex items-center justify-between px-4 z-30 border-b border-white/10">
         <button
           onClick={() => router.back()}
           className="text-white flex items-center gap-2 font-medium bg-white/5 px-3 py-1.5 rounded-md hover:bg-white/10"
         >
           ‹ Back
-        </button>       
+        </button>
+        <span className="text-white/70 text-sm truncate max-w-[200px]">Secure Reader</span>
       </div>
 
-      {/* PDF Viewer Iframe */}
-      <div className="w-full h-full pt-14">
-        <iframe
-          src={viewerUrl}
-          className="w-full h-full border-none"
-          title="Professional PDF Viewer"
-          allow="fullscreen"
-        />
-      </div>
+      {/* PDF Viewer - ဖိုင်အကြီးကြီးတွေကို မြန်မြန်ဖွင့်ပေးမယ့်အပိုင်း */}
+      <div className="flex-1 overflow-hidden relative bg-white">
+       <Worker workerUrl={`https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js`}>
+  <Viewer fileUrl={finalPdfUrl} plugins={[defaultLayoutPluginInstance]} />
+</Worker>
 
-      {/* Anti-Screenshot Watermark */}
-      <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden">
-         <p className="text-white/[0.03] -rotate-45 text-8xl font-black uppercase select-none">
+        {/* Anti-Screenshot Watermark */}
+        <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden z-10">
+          <p className="text-[#000]/[0.03] -rotate-45 text-8xl font-black uppercase select-none">
             Burmese Beacon
-         </p>
+          </p>
+        </div>
       </div>
     </div>
   )
 }
 
+// Main Export Component
 export default function ViewPDF() {
   return (
     <Suspense fallback={
-      <div className="flex flex-col items-center justify-center h-screen bg-[#001f3f] text-white">
+      <div className="h-screen bg-[#001f3f] flex flex-col items-center justify-center text-white">
         <div className="w-12 h-12 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p className="text-sm font-bold tracking-widest animate-pulse">LOADING SECURE READER...</p>
+        <p className="animate-pulse">စာအုပ်ကို အဆင်သင့်ဖြစ်အောင် ပြင်ဆင်နေပါသည်...</p>
       </div>
     }>
       <ViewPDFContent />
