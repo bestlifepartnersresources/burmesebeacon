@@ -1,4 +1,4 @@
-const CACHE_NAME = 'burmese-beacon-v6'; // Version ကို v4 လို့ တိုးလိုက်ပါ (အရေးကြီးသည်)
+const CACHE_NAME = 'burmese-beacon-v7'; // Version ကို v4 လို့ တိုးလိုက်ပါ (အရေးကြီးသည်)
 const urlsToCache = [
   '/',
   '/manifest.json',
