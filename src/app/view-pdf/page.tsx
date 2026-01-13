@@ -117,6 +117,7 @@ const zoomPluginInstance = zoomPlugin();
         /* ၁။ PDF စာမျက်နှာနောက်ခံကို နက်ပြာရောင်ထားခြင်း */
         .rpv-core__inner-pages {
           background-color: #001f3f !important;
+          touch-action: none !important;
         }
         /* ၂။ Icon များအားလုံးကို ရွှေရောင်ပြောင်းခြင်း */
         .rpv-core__icon, .rpv-core__button {
@@ -141,7 +142,8 @@ const zoomPluginInstance = zoomPlugin();
         }
         /* ၅။ အရေးကြီးဆုံး: လက်နဲ့ zoom ဆွဲရင် Toolbar ပါမလာအောင် လုပ်ခြင်း */
         .rpv-core__viewer {
-          touch-action: direct-manipulation !important;
+          touch-action: none !important; 
+          -ms-touch-action: none !important;
         }
         /* Toolbar ကို Fixed ဖြစ်နေစေရန် CSS မှ ထပ်မံ ထိန်းချုပ်ခြင်း */
         .rpv-default-layout__toolbar {
