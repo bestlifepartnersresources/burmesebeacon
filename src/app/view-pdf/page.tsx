@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useMemo, ReactElement } from 'react'
 import dynamic from 'next/dynamic'
+import { zoomPlugin } from '@react-pdf-viewer/zoom'
 
 const Viewer = dynamic(() => import('@react-pdf-viewer/core').then((mod) => mod.Viewer), { ssr: false })
 const Worker = dynamic(() => import('@react-pdf-viewer/core').then((mod) => mod.Worker), { ssr: false })
@@ -16,6 +17,7 @@ function ViewPDFContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const rawUrl = searchParams.get('url')
+ 
 
   // ၁။ Loading ပြနေချိန်မှာ စာသားထည့်ဖို့ function
   const renderLoader = () => (
@@ -34,7 +36,7 @@ function ViewPDFContent() {
       </div>
     </div>
   );
-
+const zoomPluginInstance = zoomPlugin();
   const renderToolbar = (Toolbar: (props: ToolbarProps) => ReactElement) => (
     <Toolbar>
       {(slots: ToolbarSlot) => {
@@ -82,11 +84,11 @@ function ViewPDFContent() {
       }}
     </Toolbar>
   );
-
-  // defaultLayoutPlugin ထဲတွင် Sidebar ကို ဖျောက်ထားပါသည်
+  
+   // defaultLayoutPlugin ထဲတွင် Sidebar ကို ဖျောက်ထားပါသည်
   const defaultLayoutPluginInstance = defaultLayoutPlugin({
     renderToolbar,
-    sidebarTabs: () => [],
+    sidebarTabs: () => [],    
   });
 
   const finalPdfUrl = useMemo(() => {
@@ -103,7 +105,7 @@ function ViewPDFContent() {
         <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
           <Viewer
             fileUrl={finalPdfUrl}
-            plugins={[defaultLayoutPluginInstance]}
+            plugins={[defaultLayoutPluginInstance, zoomPluginInstance]}
             theme="dark"
             defaultScale={SpecialZoomLevel.PageWidth}
             renderLoader={renderLoader}
@@ -139,7 +141,7 @@ function ViewPDFContent() {
         }
         /* ၅။ အရေးကြီးဆုံး: လက်နဲ့ zoom ဆွဲရင် Toolbar ပါမလာအောင် လုပ်ခြင်း */
         .rpv-core__viewer {
-          touch-action: pan-x pan-y !important;
+          touch-action: direct-manipulation !important;
         }
         /* Toolbar ကို Fixed ဖြစ်နေစေရန် CSS မှ ထပ်မံ ထိန်းချုပ်ခြင်း */
         .rpv-default-layout__toolbar {
