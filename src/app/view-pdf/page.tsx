@@ -17,8 +17,6 @@ function ViewPDFContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const rawUrl = searchParams.get('url')
- 
-
   // ၁။ Loading ပြနေချိန်မှာ စာသားထည့်ဖို့ function
   const renderLoader = () => (
     <div className="flex flex-col items-center justify-center w-full h-full text-[#FFD700] bg-[#001f3f]">
@@ -48,20 +46,18 @@ const zoomPluginInstance = zoomPlugin();
           GoToNextPage,
           GoToPreviousPage,
         } = slots;
-        
         return (
           /* z-50 နှင့် sticky ထည့်ထားခြင်းက Toolbar ကို ငြိမ်နေစေပါသည် */
           <div className="sticky top-0 z-50 flex items-center justify-between w-full px-4 h-14 bg-[#001f3f] border-b border-[#60a5fa]/30 shrink-0">
             {/* ဘယ်ဘက်: Back Button */}
             <div className="flex items-center">
-              <button 
-                onClick={() => router.back()} 
+              <button
+                onClick={() => router.back()}
                 className="text-[#FFD700] hover:bg-white/10 px-3 py-1.5 rounded-md border border-[#60a5fa]/40 transition-all flex items-center gap-1 font-medium"
               >
                 <span className="text-xl">‹</span> Back
               </button>
             </div>
-
             {/* အလယ်: Page Navigation */}
             <div className="flex items-center gap-1">
               <div className="border border-[#60a5fa]/50 rounded bg-blue-900/20"><GoToPreviousPage /></div>
@@ -73,7 +69,6 @@ const zoomPluginInstance = zoomPlugin();
               </div>
               <div className="border border-[#60a5fa]/50 rounded bg-blue-900/20"><GoToNextPage /></div>
             </div>
-
             {/* ညာဘက်: Zoom Controls */}
             <div className="flex items-center gap-1 border border-[#60a5fa]/50 rounded bg-blue-900/20 px-1">
               <ZoomOut />
@@ -84,13 +79,11 @@ const zoomPluginInstance = zoomPlugin();
       }}
     </Toolbar>
   );
-  
    // defaultLayoutPlugin ထဲတွင် Sidebar ကို ဖျောက်ထားပါသည်
   const defaultLayoutPluginInstance = defaultLayoutPlugin({
     renderToolbar,
     sidebarTabs: () => [],    
   });
-
   const finalPdfUrl = useMemo(() => {
     if (!rawUrl) return null
     let decoded = decodeURIComponent(decodeURIComponent(rawUrl))
@@ -98,7 +91,6 @@ const zoomPluginInstance = zoomPlugin();
   }, [rawUrl])
 
   if (!finalPdfUrl) return <div className="text-white p-5 text-center">PDF URL မရှိပါ။</div>
-
   return (
     <div className="flex flex-col h-screen bg-[#001f3f] overflow-hidden">
       <div className="flex-1 overflow-hidden relative" data-rpv-theme="dark">
@@ -112,12 +104,10 @@ const zoomPluginInstance = zoomPlugin();
           />
         </Worker>
       </div>
-
       <style jsx global>{`
         /* ၁။ PDF စာမျက်နှာနောက်ခံကို နက်ပြာရောင်ထားခြင်း */
         .rpv-core__inner-pages {
           background-color: #001f3f !important;
-          touch-action: none !important;
         }
         /* ၂။ Icon များအားလုံးကို ရွှေရောင်ပြောင်းခြင်း */
         .rpv-core__icon, .rpv-core__button {
@@ -142,8 +132,7 @@ const zoomPluginInstance = zoomPlugin();
         }
         /* ၅။ အရေးကြီးဆုံး: လက်နဲ့ zoom ဆွဲရင် Toolbar ပါမလာအောင် လုပ်ခြင်း */
         .rpv-core__viewer {
-          touch-action: none !important; 
-          -ms-touch-action: none !important;
+          touch-action: direct-manipulation !important;
         }
         /* Toolbar ကို Fixed ဖြစ်နေစေရန် CSS မှ ထပ်မံ ထိန်းချုပ်ခြင်း */
         .rpv-default-layout__toolbar {
@@ -156,14 +145,13 @@ const zoomPluginInstance = zoomPlugin();
     </div>
   )
 }
-
 export default function ViewPDF() {
   return (
     <Suspense fallback={<div className="h-screen bg-[#001f3f] text-[#FFD700] flex flex-col items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#FFD700] mb-4"></div>
-        စာအုပ်ကို ပြင်ဆင်နေပါသည်...
+       စာအုပ်ကို ပြင်ဆင်နေပါသည်...
       </div>}>
       <ViewPDFContent />
     </Suspense>
   )
-}
+} 
