@@ -19,15 +19,11 @@ function ViewPDFContent() {
 
   // ၁။ Loading ပြနေချိန်မှာ စာသားထည့်ဖို့ function
   const renderLoader = () => (
-    // h-full w-full ပေးထားလို့ screen အကြီးအသေးပေါ်မူတည်ပြီး အမြဲ အလယ်မှာ ရှိနေပါမယ်
-    <div className="flex flex-col items-center justify-center w-full h-[80vh] text-[#FFD700] bg-[#001f3f]">
+    <div className="flex flex-col items-center justify-center w-full h-full text-[#FFD700] bg-[#001f3f]">
       <div className="relative flex items-center justify-center">
-        {/* အပြင်က လည်နေတဲ့ အဝိုင်းအကြီး */}
         <div className="animate-spin rounded-full h-20 w-20 border-t-4 border-b-4 border-[#60a5fa]/30"></div>
-        {/* အတွင်းက လည်နေတဲ့ အဝိုင်းအသေး */}
         <div className="absolute animate-spin rounded-full h-12 w-12 border-r-4 border-l-4 border-[#FFD700]"></div>
       </div>
-      
       <div className="mt-6 text-center">
         <p className="text-xl md:text-2xl font-bold tracking-widest animate-pulse">
           ဖတ်ရှုနိုင်ရန် ပြင်ဆင်နေပါသည်။
@@ -52,7 +48,8 @@ function ViewPDFContent() {
         } = slots;
         
         return (
-          <div className="flex items-center justify-between w-full px-4 h-14 bg-[#001f3f] border-b border-[#60a5fa]/30 shrink-0">
+          /* z-50 နှင့် sticky ထည့်ထားခြင်းက Toolbar ကို ငြိမ်နေစေပါသည် */
+          <div className="sticky top-0 z-50 flex items-center justify-between w-full px-4 h-14 bg-[#001f3f] border-b border-[#60a5fa]/30 shrink-0">
             {/* ဘယ်ဘက်: Back Button */}
             <div className="flex items-center">
               <button 
@@ -70,7 +67,7 @@ function ViewPDFContent() {
                 <div className="w-12 text-center">
                    <CurrentPageInput />
                 </div>
-                <span className="text-[#FFD700] font-bold"><NumberOfPages/></span>
+                <span className="text-[#FFD700] font-bold">/ <NumberOfPages/></span>
               </div>
               <div className="border border-[#60a5fa]/50 rounded bg-blue-900/20"><GoToNextPage /></div>
             </div>
@@ -86,6 +83,7 @@ function ViewPDFContent() {
     </Toolbar>
   );
 
+  // defaultLayoutPlugin ထဲတွင် Sidebar ကို ဖျောက်ထားပါသည်
   const defaultLayoutPluginInstance = defaultLayoutPlugin({
     renderToolbar,
     sidebarTabs: () => [],
@@ -104,25 +102,25 @@ function ViewPDFContent() {
       <div className="flex-1 overflow-hidden relative" data-rpv-theme="dark">
         <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
           <Viewer
-  fileUrl={finalPdfUrl}
-  plugins={[defaultLayoutPluginInstance]}
-  theme="dark"
-  defaultScale={SpecialZoomLevel.PageWidth}
-  renderLoader={renderLoader} // ဒီနေရာမှာ (percentages) ကို ဖြုတ်ပြီး renderLoader ပဲ ပေးလိုက်ပါ
-/>
+            fileUrl={finalPdfUrl}
+            plugins={[defaultLayoutPluginInstance]}
+            theme="dark"
+            defaultScale={SpecialZoomLevel.PageWidth}
+            renderLoader={renderLoader}
+          />
         </Worker>
       </div>
 
       <style jsx global>{`
-        /* PDF နောက်ခံ */
+        /* ၁။ PDF စာမျက်နှာနောက်ခံကို နက်ပြာရောင်ထားခြင်း */
         .rpv-core__inner-pages {
           background-color: #001f3f !important;
         }
-        /* Icon များအားလုံးကို ရွှေရောင်ပြောင်းခြင်း */
+        /* ၂။ Icon များအားလုံးကို ရွှေရောင်ပြောင်းခြင်း */
         .rpv-core__icon, .rpv-core__button {
           color: #FFD700 !important;
         }
-        /* Button Box များကို အပြာနုရောင် Border ထားခြင်း */
+        /* ၃။ Button Box များကို အပြာနုရောင် Border ထားခြင်း */
         .rpv-core__button {
           border-radius: 4px !important;
           transition: all 0.2s;
@@ -130,13 +128,25 @@ function ViewPDFContent() {
         .rpv-core__button:hover {
           background-color: rgba(96, 165, 250, 0.2) !important;
         }
-        /* Page Number Input Box */
+        /* ၄။ Page Number Input Box ကို အဖြူရောင်နောက်ခံ၊ အပြာနု Border ထားခြင်း */
         .rpv-core__textbox {
           background-color: #f0f4f8 !important;
           border: 2px solid #60a5fa !important;
           color: #001f3f !important;
           font-weight: bold !important;
           border-radius: 4px !important;
+          text-align: center;
+        }
+        /* ၅။ အရေးကြီးဆုံး: လက်နဲ့ zoom ဆွဲရင် Toolbar ပါမလာအောင် လုပ်ခြင်း */
+        .rpv-core__viewer {
+          touch-action: pan-x pan-y !important;
+        }
+        /* Toolbar ကို Fixed ဖြစ်နေစေရန် CSS မှ ထပ်မံ ထိန်းချုပ်ခြင်း */
+        .rpv-default-layout__toolbar {
+          position: sticky !important;
+          top: 0 !important;
+          z-index: 100 !important;
+          background-color: #001f3f !important;
         }
       `}</style>
     </div>
