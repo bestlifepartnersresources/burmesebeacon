@@ -25,6 +25,7 @@ export function proxy(request: NextRequest) {
     pathname === '/' || 
     pathname === '/login' || 
     pathname === '/signup' || 
+    pathname === '/check-email' ||
     pathname === '/admin-nmw' ||
     pathname.startsWith('/view-pdf')
 

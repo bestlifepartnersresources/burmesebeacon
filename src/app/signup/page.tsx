@@ -37,16 +37,15 @@ export default function SignUp() {
           detail: { message: 'အကောင့်ဖွင့်ရာတွင် အမှားအယွင်းရှိပါသည်။ ပြန်လည်ကြိုးစားကြည့်ပါ။' } 
         }))
       } else {
-        // ၃။ အောင်မြင်ရင် Notification ပြပြီး Login ဆီကို data တွေပါ ပို့မယ်
-        window.dispatchEvent(new CustomEvent('notify', { 
-          detail: { message: 'အကောင့်ဖွင့်ခြင်း အောင်မြင်ပါသည်။' } 
-        }))
+  window.dispatchEvent(new CustomEvent('notify', { 
+    detail: { message: 'အကောင့်ဖွင့်ခြင်း အောင်မြင်ပါသည်။ Email ကို စစ်ဆေးပေးပါ။' } 
+  }))
 
-        // ခေတ္တစောင့်ပြီး Login ကို လွှတ်လိုက်မယ် (Email/Password ပါ တစ်ခါတည်း ပါသွားမယ်)
-        setTimeout(() => {
-          router.push(`/login?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`)
-        }, 1500)
-      }
+  setTimeout(() => {
+    // email နဲ့ password ကို check-email ဆီ ပို့လိုက်မယ်
+    router.push(`/check-email?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`)
+  }, 1500)
+}
     } catch (error) {
       window.dispatchEvent(new CustomEvent('notify', { 
         detail: { message: 'တစ်ခုခု မှားယွင်းနေပါသည်။ ပြန်လည်ကြိုးစားပါ။' } 
